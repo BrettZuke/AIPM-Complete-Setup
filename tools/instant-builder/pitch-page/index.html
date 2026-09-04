@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Your website preview</title>
+<meta name="description" content="See exactly how your website could look, built around your business in about a minute." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23030303'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial' font-size='17' font-weight='bold' fill='%23EAB308' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet" />
+<style>
+/* Design DNA cloned from the confirmed Summit proposal / settoku-watch page:
+   gold on warm ink, Plus Jakarta Sans throughout, dark cover over a light body,
+   numbered value stack. Deliberately not reinvented. */
+:root{
+  --gold:#EAB308; --gold-soft:#D4A94E; --gold-deep:#9C7B2E;
+  --ink:#1F1A15; --ink-2:#54514A; --muted:#86827A;
+  --hair:rgba(31,26,21,0.12); --hair-2:rgba(31,26,21,0.08);
+  --bg:#F1F1F1; --cream:#FAF8F1; --white:#fff;
+  --ok:#127A45; --bad:#B23B2E;
+  --sans:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-0.025em;line-height:1.08}
+p{margin:0 0 1em}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(3,3,3,.92);
+  backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;
+  height:58px;gap:16px}
+.wordmark{color:#fff;font-weight:800;font-size:14px;letter-spacing:.14em;
+  text-transform:uppercase}
+.prepared{color:rgba(255,255,255,.55);font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;display:none}
+@media(min-width:820px){.prepared{display:block}}
+.pill-cta{background:var(--gold);color:#1a1400;text-decoration:none;
+  font-weight:700;font-size:13px;padding:9px 18px;border-radius:999px;
+  white-space:nowrap;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.pill-cta:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(234,179,8,.32)}
+
+/* Dark cover */
+.cover{background:linear-gradient(180deg,#030303 0%,#1F2124 100%);color:#fff;
+  padding:64px 0 76px;position:relative;overflow:hidden}
+.cover::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(760px 420px at 78% 8%,rgba(234,179,8,.14),transparent 62%)}
+.cover .wrap{position:relative;z-index:2}
+.eyebrow{display:inline-block;border:1px solid rgba(234,179,8,.42);
+  color:var(--gold-soft);font-size:11.5px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;padding:7px 15px;border-radius:999px;margin-bottom:22px}
+.cover h1{font-size:clamp(34px,5.4vw,60px);max-width:15ch}
+.cover h1 .g{color:var(--gold)}
+.lede{color:rgba(255,255,255,.74);font-size:clamp(16px,1.7vw,19px);
+  max-width:52ch;margin-top:18px}
+
+/* Numbered value stack */
+.vstack{margin:34px 0 30px;border-top:1px solid rgba(255,255,255,.12)}
+.vrow{display:flex;gap:16px;align-items:baseline;padding:13px 0;
+  border-bottom:1px solid rgba(255,255,255,.12)}
+.vnum{color:var(--gold);font-weight:800;font-size:13px;letter-spacing:.08em;
+  min-width:26px}
+.vtext{color:#fff;font-weight:600;font-size:clamp(15px,1.6vw,17px)}
+.vrow.sum .vtext{color:var(--gold-soft)}
+
+.btn-gold{display:inline-flex;align-items:center;gap:11px;background:var(--gold);
+  color:#1a1400;border:0;text-decoration:none;font-weight:800;font-size:16px;
+  padding:16px 28px;border-radius:999px;cursor:pointer;font-family:var(--sans);
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(234,179,8,.34)}
+.btn-gold .arrow{display:grid;place-items:center;width:24px;height:24px;
+  border-radius:999px;background:rgba(0,0,0,.16);font-size:13px}
+.cover-note{color:rgba(255,255,255,.5);font-size:13.5px;margin-top:14px}
+
+/* Light sections */
+section.light{padding:70px 0;background:var(--bg)}
+section.light.alt{background:#EDEDEB}
+.label{color:var(--gold-deep);font-size:11.5px;font-weight:800;letter-spacing:.17em;
+  text-transform:uppercase;margin-bottom:12px}
+.h2{font-size:clamp(25px,3.4vw,38px);max-width:20ch;position:relative;
+  padding-bottom:16px;margin-bottom:22px}
+.h2::after{content:"";position:absolute;left:0;bottom:0;width:56px;height:3px;
+  background:var(--gold)}
+.sub{color:var(--ink-2);max-width:58ch}
+
+.reasons{display:grid;gap:18px;margin-top:34px}
+@media(min-width:800px){.reasons{grid-template-columns:repeat(3,1fr)}}
+.reason{background:var(--cream);border:1px solid var(--hair);border-radius:14px;
+  padding:26px 24px;box-shadow:0 1px 2px rgba(31,26,21,.04),0 10px 26px rgba(31,26,21,.05)}
+.reason .num{color:var(--gold-deep);font-weight:800;font-size:12px;
+  letter-spacing:.1em;margin-bottom:11px}
+.reason h3{font-size:19px;margin-bottom:9px}
+.reason p{color:var(--ink-2);font-size:15.5px;margin:0}
+
+/* Form */
+.formwrap{background:var(--cream);border:1px solid var(--hair);border-radius:18px;
+  padding:30px 24px;box-shadow:0 2px 4px rgba(31,26,21,.05),0 20px 50px rgba(31,26,21,.09)}
+@media(min-width:760px){.formwrap{padding:40px}}
+.steps{display:flex;gap:8px;margin-bottom:26px}
+
+.stepnote{color:var(--muted);font-size:12.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:8px}
+fieldset{border:0;padding:0;margin:0}
+fieldset[hidden]{display:none}
+.q{margin-bottom:24px}
+.q > label{display:block;font-weight:700;font-size:16.5px;margin-bottom:6px}
+.hint{color:var(--muted);font-size:13.5px;margin-bottom:10px}
+input[type=text],input[type=email],input[type=tel]{width:100%;font-family:var(--sans);
+  font-size:16px;color:var(--ink);background:var(--white);border:1px solid var(--hair);
+  border-radius:10px;padding:13px 14px;transition:border-color .18s,box-shadow .18s}
+input:focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 3px rgba(234,179,8,.18)}
+
+.chip{border:1px solid var(--hair);background:var(--white);color:var(--ink-2);
+  font-family:var(--sans);font-size:14.5px;font-weight:600;padding:10px 15px;
+  border-radius:999px;cursor:pointer;transition:all .18s var(--ease);text-align:left}
+.chip:hover{border-color:var(--gold-soft);color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.knownrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  background:var(--white);border:1px solid var(--hair);border-radius:12px;
+  padding:13px 15px;margin-bottom:24px;font-size:15px}
+.knownrow strong{font-weight:800}
+.linkbtn{background:0;border:0;color:var(--gold-deep);font-family:var(--sans);
+  font-size:14px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
+.knownfields{display:grid;gap:12px;margin-top:14px}
+/* A class rule with display beats the UA [hidden]{display:none}, so every
+   element toggled by the hidden attribute needs its own explicit rule. */
+.knownfields[hidden]{display:none}
+@media(min-width:700px){.knownfields{grid-template-columns:repeat(3,1fr)}}
+.navrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+.btn-ghost{background:0;border:1px solid var(--hair);color:var(--ink-2);
+  font-family:var(--sans);font-weight:700;font-size:15px;padding:14px 22px;
+  border-radius:999px;cursor:pointer}
+.btn-ghost:hover{border-color:var(--ink-2);color:var(--ink)}
+.err{color:var(--bad);font-size:14px;font-weight:600;margin-top:10px}
+.err[hidden]{display:none}
+
+/* Building + done states */
+.state{text-align:center;padding:16px 0}
+.state[hidden]{display:none}
+.spinner{width:42px;height:42px;margin:0 auto 20px;border-radius:50%;
+  border:3px solid var(--hair);border-top-color:var(--gold);
+  animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+footer{background:#030303;color:rgba(255,255,255,.5);padding:34px 0;font-size:13.5px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span class="wordmark" id="agencyMark">Your Agency</span>
+    <span class="prepared" id="preparedFor">Prepared for your business</span>
+    <a class="pill-cta" href="#start">See my website</a>
+  </div>
+</div>
+
+<section class="cover">
+  <div class="wrap">
+    <span class="eyebrow" id="eyebrow">Prepared exclusively for your business</span>
+    <h1>See exactly how <span class="g" id="bizHead">your website</span> could look.</h1>
+    <p class="lede" id="lede">We built you a real website, not a mockup. Have a look, then book a call and we will get it live on your own address.</p>
+
+    <div class="vstack">
+      <div class="vrow"><span class="vnum">01</span><span class="vtext">Found first when someone nearby searches for you</span></div>
+      <div class="vrow"><span class="vnum">02</span><span class="vtext">Trusted in the five seconds before they decide</span></div>
+      <div class="vrow"><span class="vnum">03</span><span class="vtext">Enquiries chased and followed up without you doing it</span></div>
+      <div class="vrow sum"><span class="vnum">=</span><span class="vtext" id="sumline">You, with more of the work you actually want</span></div>
+    </div>
+
+    <a class="btn-gold" href="#start">Build my website <span class="arrow">&rsaquo;</span></a>
+    <p class="cover-note">No cost, no obligation. You will see it before you decide anything.</p>
+  </div>
+</section>
+
+<section class="light">
+  <div class="wrap">
+    <p class="label">Why this matters</p>
+    <h2 class="h2">Three reasons to look at this today</h2>
+    <p class="sub">The businesses booked solid in your area are not better at the job than you.
+      They are just easier to find and easier to trust.</p>
+    <div class="reasons">
+      <div class="reason"><div class="num">01</div>
+        <h3>Someone else is getting your work</h3>
+        <p>When people search for what you do, whoever shows up first gets the call.
+          Until that is you, those jobs keep going elsewhere.</p></div>
+      <div class="reason"><div class="num">02</div>
+        <h3>They decide in five seconds</h3>
+        <p>People judge whether you are worth ringing before they read a word.
+          A site that looks the part does the convincing for you.</p></div>
+      <div class="reason"><div class="num">03</div>
+        <h3>One extra job pays for it</h3>
+        <p>This is not a cost centre. For most trades a single extra booking
+          covers the whole thing, and the rest is profit.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="light alt" id="start">
+  <div class="wrap">
+    <p class="label">Next step</p>
+    <h2 class="h2">Have a look, then let us talk</h2>
+    <p class="sub" style="margin-bottom:30px">The site is already built. Open it, click through it,
+      and if it is close to right we will get it live on your own address. Fifteen minutes on the
+      phone is all it takes to go through it.</p>
+
+    <div class="formwrap">
+      <div class="state" id="sitePreview" hidden>
+        <h3 style="font-size:21px">Your website is ready to look at</h3>
+        <p class="sub" style="margin:10px auto 22px">Built for <strong id="previewBiz">your business</strong>.
+          Nothing to sign up for, and it is not public anywhere.</p>
+        <a class="btn-ghost" id="siteLink" href="#" target="_blank" rel="noopener">
+          Open my website <span class="arrow">&rsaquo;</span></a>
+      </div>
+
+      <div class="state" id="bookCta">
+        <h3 style="font-size:24px">Book a fifteen minute call</h3>
+        <p class="sub" style="margin:10px auto 22px">We go through what you have got now, what it
+          would take to get this live, and what it costs. If it is not for you, say so on the call
+          and nobody will chase you afterwards.</p>
+        <a class="btn-gold pill-cta" id="bookLink" href="#" target="_blank" rel="noopener">
+          Book my call <span class="arrow">&rsaquo;</span></a>
+        <p class="sub" style="margin:18px auto 0;font-size:13px" id="callFallback"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span id="footerMark">Your Agency</span>. Websites and growth systems for local businesses.
+  </div>
+</footer>
+
+<script>
+/* ---------------------------------------------------------------------------
+   Student configuration. These are the only lines you edit.
+   The goal of this page is ONE thing: get the owner to book a call.
+   There is deliberately no form. We never ask a local business to fill
+   anything in, we ask them to book.
+--------------------------------------------------------------------------- */
+var CONFIG = {
+  agencyName: "{{YOUR_BUSINESS}}",
+  bookingUrl: "{{YOUR_BOOKING_LINK}}",
+  phone: ""
+};
+
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var set = function (sel, txt) { var el = $(sel); if (el) el.textContent = txt; };
+
+  /* Personalisation from the outreach link:
+     ?business=&trade=&town=&site=
+     The first three make the page read as if it was built for them.
+     site= is the slug of the website already built for this lead. */
+  var params = new URLSearchParams(location.search);
+  var business = params.get("business") || params.get("b") || "";
+  var trade    = params.get("trade")    || params.get("t") || "";
+  var siteUrl  = params.get("siteurl")  || "";
+  var siteSlug = params.get("site")     || "";
+
+  var name = business || "your business";
+
+  set("#agencyMark", CONFIG.agencyName);
+  set("#footerMark", CONFIG.agencyName);
+  set("#bizHead", business || "your website");
+  set("#eyebrow", "Prepared exclusively for " + name);
+  set("#preparedFor", "Prepared for " + name);
+  set("#previewBiz", name);
+  document.title = business ? business + ", your website preview" : "Your website preview";
+
+  if (trade) {
+    set("#sumline", "You, with more " + trade.toLowerCase() + " work booked");
+    set("#lede", "We built " + name + " a real website, not a mockup. Have a look, then book a "
+      + "call and we will get it live.");
+  } else {
+    set("#lede", "We built " + name + " a real website, not a mockup. Have a look, then book a "
+      + "call and we will get it live.");
+  }
+
+  /* Every call to action on the page points at the same booking link. */
+  var booking = CONFIG.bookingUrl;
+  var bookingReady = booking && booking.indexOf("{{") === -1 && booking !== "#";
+  if (bookingReady) {
+    $$(".pill-cta").forEach(function (a) { a.href = booking; });
+  } else {
+    /* Never ship a dead button. Say what to do instead. */
+    $$(".pill-cta").forEach(function (a) {
+      a.removeAttribute("href");
+      a.setAttribute("aria-disabled", "true");
+      a.style.opacity = "0.55";
+      a.style.cursor = "not-allowed";
+    });
+    set("#callFallback", CONFIG.phone
+      ? "Or call us on " + CONFIG.phone
+      : "Set your booking link in CONFIG.bookingUrl at the top of this file.");
+  }
+  if (CONFIG.phone && bookingReady) set("#callFallback", "Prefer to talk now? Call " + CONFIG.phone);
+
+  /* Show the already-built site when the link carries one. */
+  var href = siteUrl || (siteSlug ? "/?site=" + encodeURIComponent(siteSlug) : "");
+  if (href) {
+    var link = $("#siteLink");
+    if (link) link.href = href;
+    var block = $("#sitePreview");
+    if (block) block.hidden = false;
+  }
+}());
+</script>
+</body>
+</html>

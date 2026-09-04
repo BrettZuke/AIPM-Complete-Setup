@@ -1,0 +1,10 @@
+{
+  "example-roofing": {
+    "business": "Halloway Roofing",
+    "email": "danny@hallowayroofing.example",
+    "site": "https://your-instant-site.vercel.app/?site=example-roofing",
+    "proposal": "https://your-instant-proposal.vercel.app/proposal.html?site=example-roofing",
+    "sent": false,
+    "row": 2
+  }
+}
