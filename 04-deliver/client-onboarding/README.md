@@ -1,58 +1,75 @@
-# Client onboarding form
+# APM Client Onboarding System
 
-**Send this only after the client has paid.** It is the one form anybody ever
-fills in for you, and it collects everything needed to build their site.
+The complete onboarding system for AI Partner Method operators.
 
-## The rule it exists to protect
+Everything you need to take a creator client from "just closed" to "systems live" in 7 days — in a way that looks and feels completely professional.
 
-We never ask a prospect to fill in a form. A prospect gets a proposal, or a
-video, or both, and every one of them pushes to the same thing: book a call.
-Asking a busy owner to answer questions before they trust you is how you lose
-them.
+---
 
-Once they have paid, the relationship is different. Now they want to give you
-information, because they want their site built. That is what this is for.
+## What's inside
 
-## Deploy it
+| File | What it does |
+|------|-------------|
+| `execution/create_typeform.py` | Creates your creator client intake form in your Typeform account |
+| `directives/onboard_creator_client.md` | The full step-by-step SOP you follow for every new client |
+| `notion-template/client-workspace.md` | Exact Notion workspace structure to build for each creator client |
+| `docs/getting-started.md` | How to get set up (start here) |
 
-Push this folder to Vercel like any other project, then set three environment
-variables:
+---
 
-| Variable | What it is |
-|---|---|
-| `RESEND_API_KEY` | The same Resend key you use for contracts and lead alerts |
-| `ONBOARDING_FROM` | A verified sender, for example `You <you@yourdomain.com>` |
-| `ONBOARDING_TO` | Where the answers land. Comma separate for more than one |
+## Quick Start
 
-Send the client the link the day their payment clears, in the same email that
-confirms the sale.
+```bash
+# 1. Clone the repo
+git clone https://github.com/YOUR_USERNAME/apm-client-onboarding
+cd apm-client-onboarding
 
-## What happens when they submit
+# 2. Run setup
+chmod +x setup.sh && ./setup.sh
 
-You get an email with every answer laid out, with reply-to set to the client so
-you can just hit reply. They get a short confirmation so they know it arrived and
-stop wondering.
+# 3. Add your API keys to .env
+# (see docs/getting-started.md for where to get each one)
 
-⚠️ If the email to you fails, the client is told plainly and asked to try again.
-The form never shows a thank-you page for an intake you did not receive, because
-ten minutes of a paying client's work is not something to lose quietly.
+# 4. Create your intake form (run once)
+python3 execution/create_typeform.py
+# → Prints your live form URL to send to creator clients
 
-## What it asks, and why
+# 5. Create a client workspace (run for every new client)
+python3 execution/create_notion_workspace.py "Client Name"
+# → Builds the full Notion workspace and prints the URL
+```
 
-- **The basics and what you do.** Services and service areas are required, they
-  drive the pages and the local SEO.
-- **Their customers.** What work they want more of, what customers worry about,
-  what they do better than competitors. These four answers do more for the copy
-  than anything else on the form, because they are what the site argues.
-- **How it should feel.** Years trading, team size, price position, vibe, and
-  sites they like. The reference links save you a rebuild.
-- **Photos, logo and proof.** A file-sharing link is easiest. Real photos of
-  finished jobs beat stock every time.
-- **Accounts.** Domain, Google Business Profile, and their Google review link.
-  The review link is what every finished customer gets sent, so you need it
-  before the review engine can run.
-- **Where leads go.** The email addresses that get an alert the second an enquiry
-  lands. This feeds straight into `tools/website-template/api/lead.mjs`.
+---
 
-⚠️ Never invent a review, a rating, a year founded, or an accreditation. If they
-leave it blank, ask, or leave it off the site.
+## The Onboarding Process (overview)
+
+```
+Deal closed
+    ↓
+Send Typeform link + Notion workspace (Day 0, within 1 hour)
+    ↓
+Client completes form (48hr deadline)
+    ↓
+You review answers before kickoff call
+    ↓
+Kickoff call — 45 min (Day 2–3)
+    ↓
+Technical setup: DM setter, content brief (Week 1)
+    ↓
+Systems live
+```
+
+Full detail in `directives/onboard_creator_client.md`.
+
+---
+
+## Getting your Typeform API key
+
+1. Create a free account at [typeform.com](https://typeform.com)
+2. Go to **Account Settings → Personal tokens**
+3. Create a new token → copy it
+4. Paste into your `.env` file as `TYPEFORM_API_KEY`
+
+---
+
+Built for AI Partner Method students.

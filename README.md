@@ -23,9 +23,37 @@ Work top to bottom, once. After that you live in folders 01 to 05 on repeat.
 05-keep-the-client       reporting, edits, and keeping the monthly fee alive
 06-your-own-credibility  your own site and proof, so you look like what you sell
 scripts                  every word you will ever need to send or say
-tools                    the code: scraper, CRM, site builder, proposal builder
+tools                    the code: scraper, CRM, site builder, proposal builder, dashboard
 .claude                  the commands. Type these and the AI does the work
 ```
+
+### What lives where, after the repos were merged
+
+Everything that used to be a separate repo now sits inside this one. Nothing to
+clone twice.
+
+| Folder | Was its own repo |
+|---|---|
+| `01-find-leads/client-research` | aipm-client-research |
+| `01-find-leads/youtube-creator-scraper` | youtube-creator-scraper |
+| `02-outreach/email-toolkit` | ai-partner-method-email-toolkit |
+| `02-outreach/marketing-sops` | aipm-marketing-sops |
+| `04-deliver/client-onboarding` | ai-partner-method-onboarding |
+| `04-deliver/form-templates` | aipm-student-form-templates |
+| `04-deliver/reel-editor` | aipm-reel-editor |
+| `tools/lead-scraper` | local-lead-finder |
+| `tools/dashboard` | settoku-os, the Next.js pipeline dashboard you deploy yourself |
+
+Two things are deliberately still separate, because they are their own products
+rather than folders in this one:
+
+- **[aipm-operator-stack](https://github.com/BrettZuke/aipm-operator-stack)** is the
+  Claude Code toolkit: 255 skills, a Playwright browser so Claude can check the
+  sites you ship, subagents and task templates. Install it once and it applies to
+  every project on your machine, not just this repo.
+- **[aipm-local-website-builder](https://github.com/BrettZuke/aipm-local-website-builder)**
+  is the full website factory. It is 84MB on its own and you only need it when you
+  outgrow the 20 templates in `tools/website-templates`.
 
 ## What you are selling
 
