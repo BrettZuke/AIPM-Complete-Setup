@@ -1,59 +1,54 @@
-# The video scripts
+# The course walkthroughs
 
-Seventeen videos, about two and a half hours of finished footage. Every one is a
-screen recording with you talking over it. Nothing here needs a camera except the
-first thirty seconds of video 1, and even that is optional.
+**[OUTLINE.md](OUTLINE.md) is the file.** Twenty-eight walkthroughs across seven
+modules, matching the titles and numbering on the partner page exactly, so what
+students find here is what they were sold.
 
-## How to read a script
+Per video it gives you three things:
 
-Each file is laid out the same way.
+- **Show** is what goes on screen, in order. Links and file paths, nothing to hunt for.
+- **Cover** is the list of topics, so nothing gets skipped in the moment.
+- **Do not skip** is the single warning that costs a student real money if it goes unsaid.
 
-- **SCREEN** is what the viewer is looking at, and the exact clicks or commands.
-- **SAY THIS** is wording that has to land exactly. Everything else you say in
-  your own words.
-- **TALK ABOUT** is a list of points to cover while something runs or loads. No
-  script, just do not forget them.
-- **THE ONE THING** is the single warning that costs a student real money if they
-  miss it. Say it slowly and put it on screen if you can.
+There is no dialogue anywhere in it and nothing to read out.
 
-## Record in this order
+## The seven modules
 
-Videos 1 to 5 are a complete module on their own. You can publish after five
-recordings and let the delivery videos follow.
+| Module | When | Videos |
+|---|---|---|
+| 01 Get set up on the AI | Day 1 | 1.1 to 1.4 |
+| 02 Make the systems yours | Day 2 to 4 | 2.1 to 2.4 |
+| 03 What you are selling | Day 3 to 5 | 3.1 to 3.4 |
+| 04 Finding thousands of leads | Week 1 | 4.1 to 4.4 |
+| 05 Outreach that books calls | Week 1 | 5.1 to 5.4 |
+| 06 Closing the deal | Week 1 to 2 | 6.1 to 6.4 |
+| 07 Building and delivering | Week 2 onward | 7.1 to 7.4 |
 
-| # | Video | Length | Script |
-|---|---|---|---|
-| 1 | What you actually get | 8 min | [01-what-you-get.md](01-what-you-get.md) |
-| 2 | Set up your accounts | 20 min | [02-setup.md](02-setup.md) |
-| 3 | Find leads worth calling | 10 min | [03-find-leads.md](03-find-leads.md) |
-| 4 | Outreach that books calls | 15 min | [04-outreach.md](04-outreach.md) |
-| 5 | The call, the proposal, the money | 15 min | [05-the-call.md](05-the-call.md) |
-| 6 | Deliver 01: the website build | 4 min | [06-deliver-website.md](06-deliver-website.md) |
-| 7 | Deliver 02: the CRM and dialler | 4 min | [07-deliver-crm.md](07-deliver-crm.md) |
-| 8 | Deliver 03: automated lead follow up | 5 min | [08-deliver-lead-followup.md](08-deliver-lead-followup.md) |
-| 9 | Deliver 04: SEO and schema | 4 min | [09-deliver-seo.md](09-deliver-seo.md) |
-| 10 | Deliver 05: the referral program | 4 min | [10-deliver-referral.md](10-deliver-referral.md) |
-| 11 | Deliver 06: the review engine | 4 min | [11-deliver-reviews.md](11-deliver-reviews.md) |
-| 12 | Deliver 07: the AI chatbot | 4 min | [12-deliver-chatbot.md](12-deliver-chatbot.md) |
-| 13 | Deliver 08: launch, domain and SSL | 4 min | [13-deliver-launch.md](13-deliver-launch.md) |
-| 14 | Deliver 09: lead notifications | 4 min | [14-deliver-notifications.md](14-deliver-notifications.md) |
-| 15 | Deliver 10: GA4 analytics | 4 min | [15-deliver-analytics.md](15-deliver-analytics.md) |
-| 16 | Keeping the client | 8 min | [16-keep-the-client.md](16-keep-the-client.md) |
-| 17 | Your own credibility | 8 min | [17-your-own-credibility.md](17-your-own-credibility.md) |
-
-## Before you hit record
+## Before you record
 
 Set the terminal font large enough to read on a phone. Most people watch these on
 a phone and a default terminal is unreadable at that size.
 
-Use one made up business for every example across all seventeen videos, so the
-course feels like one continuous build rather than seventeen disconnected demos.
+Use the same made-up business across every video, so the course feels like one
+continuous build rather than twenty-eight disconnected demos.
 
-Have a second browser profile with none of your own accounts logged in. A student
-watching you click through your real Vercel dashboard learns nothing except what
-your other clients are called.
+Use a browser profile with none of your own accounts signed in. A student watching
+you click through your real dashboard learns nothing except what your other
+clients are called.
 
-## The rule that applies to every one of these
+⚠️ Never show a real client's data, a real key, or a real customer's contact
+details. Use the demo builds.
 
-Never show a real client's data, a real key, or a real customer's contact
-details. Blur it or use the demo build.
+## Not yet covered by any of the 28
+
+Six things landed in the repo after this outline was written, including a working
+creator and coach route (`01-find-leads/client-research` and
+`01-find-leads/youtube-creator-scraper`). They are listed at the bottom of the
+outline with where each one belongs.
+
+## Six videos have thin material behind them
+
+They can still be recorded, but a student who pauses has nothing solid to read:
+**1.3** driving Claude Code, **1.4** agency profile and signature, **2.3** prices
+and offer, **2.4** checking your own setup, **3.2** why a local business pays,
+**4.4** keeping the pipeline full. Each is marked in the outline.
