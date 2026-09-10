@@ -117,6 +117,8 @@ Honest state of this repo, updated as it fills in.
 | AI chatbot endpoint and setup guide | `tools/website-template/api/chat.mjs` |
 | Proposal builder and contract e-sign | `tools/proposal-builder` |
 | Evergreen VSL page you send instead of a call | `tools/vsl-page` |
+| Video editor: frame-exact cuts, captions, music, 364 SFX and 86 tracks | [aipm-video-editor](https://github.com/BrettZuke/aipm-video-editor) |
+| Quick clip tightener: strips silences, ums and repeats in one command | `04-deliver/reel-editor` |
 | The sales call proposal, with contract e-sign | `tools/sales-proposal` |
 | High end websites playbook, the premium track | `04-deliver/01-website` |
 | Marketing SOPs, frameworks and case studies | `02-outreach/marketing-sops` |
