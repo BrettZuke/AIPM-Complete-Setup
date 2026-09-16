@@ -6,8 +6,8 @@ business, and about half a minute later a real, finished website exists for them
 It gets emailed over with a link to a proposal page carrying the price and a pay
 button.
 
-Built for the AIPM webinar demo. **Nothing here is deployed and no email is
-sent.** It all runs on this machine until you say otherwise.
+Run it on this machine first to see it work. Nothing is deployed and no email
+is sent until you put it live, which is the section "Put it live" below.
 
 ## Run the demo
 
@@ -109,26 +109,73 @@ feeds the real factory build later, so nothing is throwaway.
    `?business=&trade=&town=` to its outreach link, which is exactly what this
    page reads, so no change is needed in the lead finder repo.
 
+## Put it live (three Vercel projects, then your CRM)
+
+Three small deployments from this folder, then six variables on your CRM. Every
+account is free tier. Do them in this order, because each one needs an address
+from the one before.
+
+**1. The database.** Use the Supabase project your CRM runs on. Its `schema.sql`
+(in the aipm-crm repo) creates the `sites` table the builder writes to and the
+read rule the two pages below rely on: the public key can read a site's config
+and nothing else. From Project Settings, API copy the Project URL, the anon key
+and the service_role key.
+
+**2. The site host: `preview-app`.** Every built site is served from here at
+`<address>/?site=<slug>`. Put your Project URL in `src/config/site-loader.js`
+(`STORE_URL`) and the anon key in `index.html` (`window.__AIPM_STORE_KEY__`).
+Then, from `preview-app`: `npm install`, then `npx vercel deploy --prod`. Note
+the address: it is `INSTANT_SITE_URL` on the CRM and `SITE_BASE` on the builder.
+
+**3. The proposal host: `pitch-page`.** Two static files, no build. In
+`proposal.html` fill the `CONFIG` block at the top of the script (your business
+name, `storeKey` = the anon key, `previewOrigin` = the address from step 2,
+`payLink` = your checkout link, `bookingUrl`, `fallbackEmail`, your prices) and
+set `STORE_URL` further down to your Project URL. In `index.html` set the
+business name and booking link. Then `npx vercel deploy --prod` from
+`pitch-page`. Proposals open at `<address>/proposal.html?site=<slug>`; the
+address is `INSTANT_PROPOSAL_URL` on the CRM and `PROPOSAL_BASE` on the builder.
+
+**4. The builder: `api-service`.** `npx vercel deploy --prod` from `api-service`,
+then set its environment variables in Vercel and redeploy:
+
+| Variable | What it is |
+|---|---|
+| `BUILD_SECRET` | A long random string. The CRM sends the same value as `INSTANT_BUILD_SECRET`. Without it the builder refuses every call. |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | The database from step 1. |
+| `GROQ_API_KEY`, `GEMINI_API_KEY` | Free keys that write the site copy. Either works; both is safer. `OPENROUTER_API_KEY` and `MISTRAL_API_KEY` are optional extras it can fall back to. |
+| `APIFY_TOKEN` | The Google Maps scrape behind Find. The same key as the lead scraper. `APIFY_TOKEN_2` and up add spares. |
+| `SITE_BASE`, `PROPOSAL_BASE` | The addresses from steps 2 and 3. Without them the emails link to hosts that are not yours. |
+| `TEMPLATE_BASE` | Where the website templates are served from. The public gallery it defaults to works as it is; deploy `tools/website-templates` yourself to use your own. |
+| `AGENCY_NAME`, `SENDER_NAME`, `SENDER_PHONE`, `SENDER_SITE` | How the emails and proposals are signed. |
+| `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_REPLY_TO`, `DEMO_SEND_DOMAIN` | The email that carries the finished site and proposal to the lead: your Resend key, the address it comes from, where replies go, and the domain of that address. `RESEND_CAP` is the daily ceiling, 100 unless set. |
+| `RESEND_WEBHOOK_SECRET` | Optional. Delivery events from Resend into the `email_events` table through `/api/resend-webhook`. |
+
+The builder's address plus `/api/build`, `/api/scrape` and `/api/settings` are
+the CRM's `INSTANT_BUILD_URL`, `INSTANT_SCRAPE_URL` and `INSTANT_SETTINGS_URL`.
+
+**5. Your CRM.** In the aipm-crm project on Vercel set the six variables and
+redeploy: `INSTANT_BUILD_URL`, `INSTANT_SCRAPE_URL`, `INSTANT_SETTINGS_URL`,
+`INSTANT_BUILD_SECRET`, `INSTANT_SITE_URL`, `INSTANT_PROPOSAL_URL`. Build on any
+lead then scrapes their listing, writes the site, stores it, and, when the lead
+has an email address and sending is on, emails them the proposal link.
+
 ## How the builder is protected
 
-`aipm-instant-api` spends free LLM quota and can send email, so it must never be
-callable by anyone who finds the URL. It was briefly open: the check read
-`if (secret && ...)`, and with no `BUILD_SECRET` set in Vercel it served every
-anonymous POST. It now fails closed, refusing with a 503 when the secret is
-missing rather than treating a broken deployment as permission.
+The builder spends free LLM quota and can send email, so it must never be
+callable by anyone who finds its address. It fails closed: with no
+`BUILD_SECRET` set it refuses every request with a 503 rather than treating a
+broken deployment as permission.
 
-The CRM does not hold that secret. `dashboard/crm.html` is served to anyone who
-loads the page and is copied verbatim by every student who clones the lead
-finder, so a secret in it would be public. The page posts to `api/instant`
-instead, a same-origin endpoint that checks the CRM session cookie and adds the
-secret from its own environment. Two variables, two projects:
+The CRM never puts that secret in a page. The CRM's page is served to anyone
+who loads it, so it posts to its own `api/instant`, a same-origin endpoint that
+checks the login cookie and adds the secret from the CRM's environment. Two
+variables, two projects, one value:
 
-    aipm-instant-api    BUILD_SECRET
-    outreach-dashboard  INSTANT_BUILD_SECRET   (and INSTANT_BUILD_URL, optional)
+    api-service    BUILD_SECRET
+    your CRM       INSTANT_BUILD_SECRET
 
-They must match. A student who deploys their own CRM without setting theirs gets
-a clean "the builder is not configured yet", which is the right failure: their
-builds never land on this account.
+A CRM without them gets a clean "the builder is not configured yet".
 
 ## Sending, and warming a new domain
 
