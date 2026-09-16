@@ -50,7 +50,7 @@ private signing link by email, signs, and both of you receive the executed PDF.
 
 It needs four environment variables on your Vercel project:
 `RESEND_API_KEY`, `RESEND_FROM`, `AGENCY_EMAIL`, `SIGNING_SECRET`.
-See `api/README.md` and `RESEND-SETUP.md`.
+See `api/README.md`, and `../lead-scraper/RESEND-SETUP.md` for the Resend side.
 
 ⚠️ **The contract wording is a starting point, not legal advice.** Have your own
 solicitor check it, and replace the clauses in `api/contract.json` with your own
