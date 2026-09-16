@@ -28,7 +28,7 @@ touches anyone else's client data.
 | System | Folder | What it does |
 |---|---|---|
 | Lead scraper | `tools/lead-scraper` | Scrapes Google Maps for local businesses with phone, email, site status and rating |
-| CRM and power dialler | `tools/crm` | Pipeline, lead drawer, call outcomes, sequences, referrals, customers |
+| CRM and power dialler | the aipm-crm repo, next to this one | Pipeline, lead drawer, call outcomes, sequences, sending, replies, assistant, site builder, referrals, customers |
 | 20 website templates | `tools/website-templates` | One shared core, 20 finished skins |
 | The client site template | `tools/website-template` | What the factory builds on, including lead capture and the chatbot |
 | Instant site and proposal builder | `tools/instant-builder` | A real site and proposal per lead, in about 45 seconds |

@@ -106,10 +106,10 @@ Honest state of this repo, updated as it fills in.
 | Area | Where |
 |---|---|
 | Lead scraper, Google Maps, multi key rotation | `tools/lead-scraper` |
-| Automated cold email sender and sequences | `tools/lead-scraper/send_emails.py`, `tools/crm/api/sequences.js` |
-| CRM, pipeline, power dialler | `tools/crm` |
-| Referral program, payout ledger, customer thank you page | `tools/crm/referrals.html`, `tools/crm/thanks.html` |
-| Review engine, fires when you mark a lead Won | `tools/crm/api/_thankyou.js` |
+| Automated cold email sender and sequences | `tools/lead-scraper/send_emails.py`, and the CRM's sequences |
+| CRM, pipeline, power dialler, sending, replies, assistant | the aipm-crm repo, next to this one on GitHub |
+| Referral program, payout ledger, customer thank you page | the aipm-crm repo: `dashboard/api/referrals.js`, `dashboard/thanks.html` |
+| Review engine, fires when you mark a lead Won | the aipm-crm repo: `dashboard/api/_thankyou.js` |
 | Instant site and proposal builder, one per lead | `tools/instant-builder` |
 | 20 finished premium website templates | `tools/website-templates` |
 | The website template you build clients on | `tools/website-template` |

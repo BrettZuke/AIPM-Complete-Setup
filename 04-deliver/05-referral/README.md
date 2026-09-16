@@ -3,8 +3,9 @@
 **What the client is paying for:** their existing customers sending them the next
 ones. Value on the proposal: $900.
 
-**Where the system lives:** `tools/crm/referrals.html` and
-`tools/crm/api/referrals.js`, plus the customer page `tools/crm/thanks.html`.
+**Where the system lives:** the aipm-crm repo, next to this one on GitHub:
+Customers and referrals in the CRM, `dashboard/api/referrals.js`, and the
+customer page `dashboard/thanks.html`.
 
 ## What is already built
 

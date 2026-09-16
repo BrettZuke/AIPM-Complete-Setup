@@ -3,7 +3,8 @@
 **What the client is paying for:** somewhere every lead and customer lives, so
 nothing gets forgotten. Value on the proposal: $1,500.
 
-**Where the system lives:** `tools/crm`.
+**Where the system lives:** the aipm-crm repo, next to this one on GitHub. This
+repo no longer carries a copy; `tools/crm` only points there.
 
 ## Two ways to use it
 
@@ -15,17 +16,26 @@ pipeline themselves.
 
 ## What you do
 
-1. Deploy `tools/crm` as its own Vercel project.
-2. Set up the Google Sheet behind it. See `00-setup/07-google-sheet.md`.
-3. Set the environment variables listed under "your CRM" in
-   `00-setup/ENV-REFERENCE.md`.
-4. Generate a login. The command is in the same file.
+1. Clone aipm-crm and, from its `dashboard` folder, run `node setup.mjs`. It
+   asks for two free tokens (Supabase and Vercel), makes the database, deploys,
+   and prints the address with a one-time setup code.
+2. Open that address. The first visit makes the owner login.
+3. Connect sending: Settings, You (your name and a sending address on a domain
+   verified in Resend). `dashboard/README.md` there covers replies, Gmail
+   through Make, the assistant and the site builder.
+4. Point the scraper at it: `CRM_URL` and `CRM_KEY` (Settings, Developer) in
+   `tools/lead-scraper/.env`. Every scrape then lands in the CRM.
+5. For a client with a sales team: Settings, Team invites them, or run them a
+   copy of their own under their accounts.
 
 ## You MUST customise
 
-- `LEADS_SHEET_URL` and `LEADS_SHEET_TOKEN`, and they must match the scraper's
-- A real password. Generate it, never reuse one across clients
-- `CRM_USERS`, the email addresses allowed to log in
+- Settings, You: the name, sending address, phone and video link on every
+  email the CRM sends
+- A copy per client. `setup.mjs` generates fresh secrets each time; never reuse
+  a database or a login across clients
+- The Google Sheet is optional now (`google-sheet/SETUP.md` in that repo), and
+  if you use one its password must match on the scraper and the CRM
 
 ## The power dialler
 

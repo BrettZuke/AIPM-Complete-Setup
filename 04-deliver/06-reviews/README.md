@@ -3,13 +3,14 @@
 **What the client is paying for:** a Google review asked for after every finished
 job, without them remembering to ask. Value on the proposal: $700.
 
-**Where the system lives:** `tools/crm/api/_thankyou.js`, fired from
-`tools/crm/api/crm.js`, landing on `tools/crm/thanks.html`.
+**Where the system lives:** the aipm-crm repo, next to this one on GitHub:
+`dashboard/api/_thankyou.js`, fired from `dashboard/api/crm.js`, landing on
+`dashboard/thanks.html`.
 
 ## It is already wired
 
 The moment a lead is marked **Won** in the CRM, the thank-you email fires. It runs
-once per customer, and only after the sheet write succeeds, so a customer can
+once per customer, and only after the save succeeds, so a customer can
 never be emailed twice or emailed about a job that did not save.
 
 It stays completely silent until you set three things, which is why it may look
