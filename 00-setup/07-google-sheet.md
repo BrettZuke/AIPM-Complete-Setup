@@ -18,13 +18,11 @@ In short: make a Sheet, open **Extensions > Apps Script**, paste in `Code.gs` fr
 that same folder, deploy it as a Web app with **Execute as: Me** and **Who has
 access: Anyone**, authorise it, and copy the URL that ends in `/exec`.
 
-## ⚠️ Do the optional password. It is not optional.
+## The password is required
 
-The setup guide calls `SHARED_TOKEN` optional. For a personal test it is. For a
-real business holding real people's contact details it is not.
-
-Left blank, that web app URL accepts a write from anyone on the internet who has
-the link. It is a long random URL, which is not the same as being protected.
+The script refuses every request until `SHARED_TOKEN` is set, on purpose. That
+web app URL is not a secret: it sits in your `.env`, in Vercel and in Make
+scenarios, and a long random URL is not the same as being protected.
 
 So set it. At the top of `Code.gs`:
 

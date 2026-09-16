@@ -10,9 +10,12 @@
  * they pick up the same formatting.
  */
 
-// OPTIONAL: set a password here and the same value as SHEETS_WEBHOOK_TOKEN in
-// your .env. Leave it blank to accept any request (fine for personal use).
+// REQUIRED: a password of your own. Put the same value in the scraper's .env as
+// SHEETS_WEBHOOK_TOKEN and on the CRM's Vercel project as LEADS_SHEET_TOKEN.
+// While it is blank every request that reads or writes rows is refused: the web
+// app URL is not a secret, it sits in .env files, in Vercel and in Make scenarios.
 var SHARED_TOKEN = '';
+var NO_TOKEN = 'Set SHARED_TOKEN at the top of Code.gs, then Deploy > Manage deployments > edit > Deploy. Put the same value in the scraper .env as SHEETS_WEBHOOK_TOKEN and on the CRM as LEADS_SHEET_TOKEN.';
 
 var SHEET_NAME = 'Leads';
 var LAST_FMT_ROW = 2000; // formatting/validation cover this many rows
@@ -37,7 +40,8 @@ var STATUS_CHOICES = ['New', 'Contacted', 'Follow-up 1', 'Follow-up 2', 'Follow-
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
-    if (SHARED_TOKEN && body.token !== SHARED_TOKEN) {
+    if (!SHARED_TOKEN) return _json({ ok: false, error: NO_TOKEN });
+    if (String(body.token || '') !== SHARED_TOKEN) {
       return _json({ ok: false, error: 'bad token' });
     }
     // The outreach autopilot posts status updates after it emails leads.
@@ -105,7 +109,7 @@ function doPost(e) {
       if (needRows > sheet.getMaxRows()) {
         sheet.insertRowsAfter(sheet.getMaxRows(), needRows - sheet.getMaxRows());
       }
-      sheet.getRange(startRow, 1, rows.length, rows[0].length).setValues(rows);
+      sheet.getRange(startRow, 1, rows.length, rows[0].length).setValues(rows.map(_safeRow));
     }
     return _json({ ok: true, added: rows.length });
   } catch (err) {
@@ -134,7 +138,7 @@ function setupSheet(sheet, headers) {
 
   // Header row (row 2), pretty labels.
   var labels = headers.map(function (h) { return LABELS[h] || h; });
-  sheet.getRange(2, 1, 1, ncols).setValues([labels])
+  sheet.getRange(2, 1, 1, ncols).setValues([labels.map(_cell)])
     .setBackground('#1f2a44').setFontColor('#ffffff')
     .setFontWeight('bold').setVerticalAlignment('middle');
   sheet.setRowHeight(2, 24);
@@ -189,6 +193,17 @@ function _colLetter(n) {
   return s;
 }
 
+// Sheets reads a cell that starts with = + - @ (or a tab or a return) as a
+// formula, and a formula can send the rest of the sheet to a stranger's server
+// the moment the owner opens it. Text is written with a leading apostrophe,
+// which Sheets treats as "this is text" and leaves out of the value it hands
+// back, so nothing the CRM reads changes.
+function _cell(v) {
+  if (typeof v !== 'string') return v;
+  return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+}
+function _safeRow(row) { return row.map(_cell); }
+
 // A plain visit in the browser confirms the endpoint is live. With ?stats=1 it
 // returns status counts and recent replies (the dashboard's replies panel). With
 // ?leads=1 it returns every emailable lead's row, status, and dates, which is how
@@ -197,7 +212,8 @@ function _colLetter(n) {
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.stats || p.leads || p.crm || p.referrals || p.customers) {
-    if (SHARED_TOKEN && p.token !== SHARED_TOKEN) {
+    if (!SHARED_TOKEN) return _json({ ok: false, error: NO_TOKEN });
+    if (String(p.token || '') !== SHARED_TOKEN) {
       return _json({ ok: false, error: 'bad token' });
     }
     if (p.referrals) return _json(sheetReferrals());
@@ -326,7 +342,7 @@ function writeScripts(scripts) {
       if (SCRIPT_KEYS.indexOf(k) >= 0 && Object.prototype.hasOwnProperty.call(scripts, k)) {
         // The key sits one row below its title row; the text lives in column B
         // of the title row, exactly where sheetScripts() reads it.
-        tab.getRange(j, 2).setValue(String(scripts[k]));
+        tab.getRange(j, 2).setValue(_cell(String(scripts[k])));
         saved++;
       }
     }
@@ -412,7 +428,7 @@ function updateLead(row, fields) {
     if (!Object.prototype.hasOwnProperty.call(fields, key) || !LABELS[key]) continue;
     var c = labels.indexOf(LABELS[key]) + 1;
     if (c < 1) continue;
-    sheet.getRange(row, c).setValue(fields[key] == null ? '' : String(fields[key]));
+    sheet.getRange(row, c).setValue(_cell(fields[key] == null ? '' : String(fields[key])));
     updated++;
   }
   return { ok: true, row: row, updated: updated };
@@ -447,7 +463,7 @@ function updateReferral(row, fields) {
     var v = fields[key];
     if (key === 'reward') v = Number(v) || 0;
     else v = v == null ? '' : String(v);
-    tab.getRange(row, REFERRAL_FIELD_COL[key]).setValue(v);
+    tab.getRange(row, REFERRAL_FIELD_COL[key]).setValue(_cell(v));
     updated++;
   }
   return { ok: true, row: row, updated: updated };
@@ -475,12 +491,12 @@ function markStatuses(updates) {
     var u = updates[i] || {};
     var row = parseInt(u.row, 10);
     if (!row || row < 3 || row > sheet.getLastRow()) continue;
-    if (u.status) sheet.getRange(row, cols.status).setValue(String(u.status));
-    if (u.contacted_on && cols.when) sheet.getRange(row, cols.when).setValue(String(u.contacted_on));
+    if (u.status) sheet.getRange(row, cols.status).setValue(_cell(String(u.status)));
+    if (u.contacted_on && cols.when) sheet.getRange(row, cols.when).setValue(_cell(String(u.contacted_on)));
     if (u.note && cols.notes) {
       var cell = sheet.getRange(row, cols.notes);
       var prev = String(cell.getValue() || '').trim();
-      cell.setValue(prev ? (String(u.note) + '\n' + prev) : String(u.note));
+      cell.setValue(_cell(prev ? (String(u.note) + '\n' + prev) : String(u.note)));
     }
     done++;
   }
@@ -629,7 +645,7 @@ function writeReferralTerms(terms) {
       var key = String(grid[i][0] || '').trim();
       if (REFERRAL_TERM_KEYS.indexOf(key) >= 0 &&
           Object.prototype.hasOwnProperty.call(terms, key)) {
-        tab.getRange(i, 2).setValue(String(terms[key]));
+        tab.getRange(i, 2).setValue(_cell(String(terms[key])));
         saved++;
       }
     }
@@ -728,7 +744,7 @@ function addReferral(r) {
   var tab = _referralsTab();
   var row = Math.max(tab.getLastRow() + 1, 3);
   if (row > tab.getMaxRows()) tab.insertRowsAfter(tab.getMaxRows(), row - tab.getMaxRows());
-  tab.getRange(row, 1, 1, REFERRAL_HEADERS.length).setValues([[
+  tab.getRange(row, 1, 1, REFERRAL_HEADERS.length).setValues([_safeRow([
     new Date(),
     name,
     String(r.customer_email || '').trim(),
@@ -741,7 +757,7 @@ function addReferral(r) {
     'Pending',
     '',
     ''
-  ]]);
+  ])]);
   return { ok: true, row: row };
 }
 
@@ -758,7 +774,7 @@ function markReferralPaid(row, paymentRef) {
   var refCol = REFERRAL_HEADERS.indexOf('Payment ref') + 1;
   tab.getRange(row, statusCol).setValue('Paid');
   tab.getRange(row, paidCol).setValue(new Date());
-  tab.getRange(row, refCol).setValue(String(paymentRef || '').trim());
+  tab.getRange(row, refCol).setValue(_cell(String(paymentRef || '').trim()));
   return { ok: true, row: row };
 }
 
@@ -820,14 +836,14 @@ function addJob(j) {
   var tab = _jobsTab();
   var row = Math.max(tab.getLastRow() + 1, 3);
   if (row > tab.getMaxRows()) tab.insertRowsAfter(tab.getMaxRows(), row - tab.getMaxRows());
-  tab.getRange(row, 1, 1, JOB_HEADERS.length).setValues([[
+  tab.getRange(row, 1, 1, JOB_HEADERS.length).setValues([_safeRow([
     j.date ? new Date(j.date) : new Date(),
     name,
     String(j.customer_email || '').trim(),
     String(j.customer_phone || '').trim(),
     what,
     String(j.notes || '').trim()
-  ]]);
+  ])]);
   return { ok: true, row: row };
 }
 
@@ -995,7 +1011,7 @@ function addLeads(leads) {
     var row = new Array(ncols).fill('');
     function put(key, value) {
       var c = col(key);
-      if (c > 0 && value !== undefined && value !== null && value !== '') row[c - 1] = value;
+      if (c > 0 && value !== undefined && value !== null && value !== '') row[c - 1] = _cell(value);
     }
     put('business_name', l.business);
     put('category', l.category);

@@ -595,7 +595,7 @@ def test_write_csv_roundtrip():
     f.write_csv(leads, path)
     with open(path, newline="", encoding="utf-8") as fh:
         rows = list(_csv.reader(fh))
-    check("header matches the 24-column schema", rows[0] == f.CSV_COLUMNS and len(rows[0]) == 24)
+    check("header matches the 26-column schema", rows[0] == f.CSV_COLUMNS and len(rows[0]) == 26)
     check("one row per lead", len(rows) == 1 + len(leads))
     check("internal underscore fields never leak to the CSV", not any(h.startswith("_") for h in rows[0]))
     check("HOT no-website lead sorts above the modern one", rows[1][0] == "HOT")

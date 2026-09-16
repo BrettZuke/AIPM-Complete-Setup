@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -120,12 +121,16 @@ elif not sheet_url.endswith("/exec"):
         "Copy the Web app URL from Apps Script, not the editor URL")
 else:
     try:
-        status, body = get(sheet_url + "?stats=1")
+        tok = env_or_os("SHEETS_WEBHOOK_TOKEN")
+        status, body = get(sheet_url + "?stats=1" + ("&token=" + urllib.parse.quote(tok) if tok else ""))
         if body.lstrip().startswith("<"):
             say(FIX, "The Sheet URL returned a web page, not data",
                 "Redeploy the Apps Script with 'Who has access: Anyone'")
-        else:
+        elif json.loads(body).get("ok"):
             say(OK, "Google Sheet webhook responds")
+        else:
+            say(FIX, "The Sheet webhook refused the request",
+                str(json.loads(body).get("error", ""))[:160])
     except Exception as e:
         say(FIX, f"Could not reach the Sheet webhook ({type(e).__name__})",
             "Check the URL, and that the Apps Script deployment is public")
