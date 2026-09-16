@@ -172,6 +172,11 @@ businesses you can genuinely reach and sell to.
 
 ---
 
+Have the CRM (the aipm-crm repo next to this one)? Put its address and API
+key in `.env` as `CRM_URL` and `CRM_KEY` (Settings, Developer in the CRM) and
+every scrape lands straight in it, no sheet needed. The Google Sheet route
+still works for older setups.
+
 ## Auto-publish to a Google Sheet (optional)
 
 Want leads to land in a live Google Sheet automatically instead of a CSV? Set it

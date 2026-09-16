@@ -70,6 +70,22 @@ function doPost(e) {
     if (body.op === 'add_leads') {
       return _json(addLeads(body.leads || []));
     }
+    // The CRM edits a lead's fields in place: a corrected phone, a new email.
+    if (body.op === 'update') {
+      return _json(updateLead(body.row, body.fields || {}));
+    }
+    // The CRM removes a lead. The row is cleared, not deleted, so every other
+    // row keeps its number and nothing that points at a row goes wrong.
+    if (body.op === 'remove') {
+      return _json(removeLead(body.row));
+    }
+    // The referral desk edits or removes a referral it logged.
+    if (body.op === 'referral_update') {
+      return _json(updateReferral(body.row, body.fields || {}));
+    }
+    if (body.op === 'referral_delete') {
+      return _json(deleteReferral(body.row));
+    }
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) {
@@ -381,6 +397,73 @@ function sheetCrmLeads() {
 // Batch status write-back: [{row, status, contacted_on, note}, ...]. The outreach
 // autopilot sends status + contacted_on; Call Mode also sends a note, which is
 // prepended to the lead's Notes cell (newest first) so the call history is kept.
+// Writes the given fields onto one lead's row. Keys are the sheet's own column
+// keys (business_name, phone, email, ...); anything not a known column is left.
+function updateLead(row, fields) {
+  row = parseInt(row, 10);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) return { ok: false, error: 'no sheet' };
+  if (!row || row < 3 || row > sheet.getLastRow()) return { ok: false, error: 'that lead is not on the sheet' };
+  var ncols = sheet.getLastColumn();
+  var labels = sheet.getRange(2, 1, 1, ncols).getValues()[0].map(function (v) { return String(v).trim(); });
+  var updated = 0;
+  for (var key in fields) {
+    if (!Object.prototype.hasOwnProperty.call(fields, key) || !LABELS[key]) continue;
+    var c = labels.indexOf(LABELS[key]) + 1;
+    if (c < 1) continue;
+    sheet.getRange(row, c).setValue(fields[key] == null ? '' : String(fields[key]));
+    updated++;
+  }
+  return { ok: true, row: row, updated: updated };
+}
+
+// Clears a lead's row. Not deleteRow: that would renumber every row below it,
+// and tasks, deals and the activity log all point at rows by number.
+function removeLead(row) {
+  row = parseInt(row, 10);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) return { ok: false, error: 'no sheet' };
+  if (!row || row < 3 || row > sheet.getLastRow()) return { ok: false, error: 'that lead is not on the sheet' };
+  sheet.getRange(row, 1, 1, sheet.getLastColumn()).clearContent();
+  return { ok: true, row: row, removed: 1 };
+}
+
+// The referral columns, in the order addReferral writes them.
+var REFERRAL_FIELD_COL = {
+  customer: 2, customer_email: 3, customer_phone: 4, job: 5, referrer: 6, referrer_email: 7,
+  reward: 8, reward_type: 9, status: 10, payment_ref: 12
+};
+
+function updateReferral(row, fields) {
+  row = Number(row);
+  var tab = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REFERRALS_TAB);
+  if (!tab) return { ok: false, error: 'no Referrals tab yet' };
+  if (!row || row < 3 || row > tab.getLastRow()) return { ok: false, error: 'that referral is not on the sheet' };
+  var updated = 0;
+  for (var key in fields) {
+    if (!Object.prototype.hasOwnProperty.call(fields, key) || !REFERRAL_FIELD_COL[key]) continue;
+    var v = fields[key];
+    if (key === 'reward') v = Number(v) || 0;
+    else v = v == null ? '' : String(v);
+    tab.getRange(row, REFERRAL_FIELD_COL[key]).setValue(v);
+    updated++;
+  }
+  return { ok: true, row: row, updated: updated };
+}
+
+// Clears the referral's row, for the same reason removeLead clears rather than
+// deletes. A cleared row has no customer name, so the readers skip it.
+function deleteReferral(row) {
+  row = Number(row);
+  var tab = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REFERRALS_TAB);
+  if (!tab) return { ok: false, error: 'no Referrals tab yet' };
+  if (!row || row < 3 || row > tab.getLastRow()) return { ok: false, error: 'that referral is not on the sheet' };
+  tab.getRange(row, 1, 1, REFERRAL_HEADERS.length).clearContent();
+  return { ok: true, row: row, deleted: 1 };
+}
+
 function markStatuses(updates) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];

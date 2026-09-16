@@ -223,6 +223,10 @@ CSV_COLUMNS = [
     "notes",
     "lat",
     "lng",
+    # Appended, never inserted: the Make scenario and every sheet already in use
+    # address columns by position, so inserting one would silently repoint them.
+    "business",     # the name a human would actually say. See lib/clean_name.py
+    "send_after",   # the day this lead becomes eligible to email. Paces the queue.
 ]
 
 HEAT_ORDER = {"HOT": 0, "WARM": 1, "COOL": 2}
@@ -977,6 +981,49 @@ def sort_leads(leads: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ))
 
 
+def enrich_for_outreach(leads: list[dict[str, Any]], per_day: int, start: str) -> str:
+    """
+    Fill the two columns the outreach engine needs, in place.
+
+    `business` is the name a person would say out loud. `send_after` is the day
+    the lead becomes eligible, handed out `per_day` at a time so a 500-lead
+    scrape drips out over three weeks instead of arriving as one 500-email
+    spike that burns the sending domain on its first morning.
+    """
+    from datetime import date, timedelta
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+    from clean_name import clean_business_name
+
+    day_one = date.fromisoformat(start) if start else date.today()
+    per_day = max(1, per_day)
+    for index, lead in enumerate(leads):
+        lead["business"] = clean_business_name(lead.get("business_name", ""))
+        lead["send_after"] = (day_one + timedelta(days=index // per_day)).isoformat()
+    if not leads:
+        return ""
+
+    # The number that actually matters is not how many leads start each day, it
+    # is how many emails leave the inbox each day. Every lead gets six touches,
+    # and once the cohorts overlap all six run at once, so the steady state is
+    # six times the daily intake. Say it out loud, because getting this wrong
+    # burns the sending domain and there is no undo.
+    touches = 6
+    steady = per_day * touches
+    inboxes = max(1, -(-steady // 35))          # 35 a day is the safe ceiling
+    lines = [
+        f"{len(leads)} leads paced at {per_day} a day: first goes out "
+        f"{leads[0]['send_after']}, last {leads[-1]['send_after']}",
+        f"At {per_day} new leads a day, each getting {touches} touches, you will be "
+        f"sending about {steady} emails a day once the follow-ups overlap.",
+    ]
+    if inboxes > 1:
+        lines.append(f"That needs about {inboxes} sending inboxes. For a single inbox "
+                     f"use --per-day {max(1, 35 // touches)}.")
+    else:
+        lines.append("That fits comfortably in one warmed-up inbox.")
+    return "\n".join(lines)
+
+
 def filter_min_reviews(leads: list[dict[str, Any]], minimum: int) -> list[dict[str, Any]]:
     """Drop leads below a review count. A minimum of 0 or less keeps everything."""
     if minimum <= 0:
@@ -1080,6 +1127,63 @@ def publish_to_sheet(leads: list[dict[str, Any]], url: str, token: str = "") -> 
     return (False, str(result.get("error", "the sheet rejected the data")))
 
 
+# The CRM's own field names for what the scraper found. Status and dates are
+# left to the CRM; lat/lng and the email pacing column are the scraper's own.
+CRM_FIELDS = {
+    "business": "business", "business_name": "business", "lead_heat": "heat", "why_reach_out": "why",
+    "category": "category", "owner_name": "owner_name", "phone": "phone", "email": "email", "website": "website",
+    "facebook": "facebook", "instagram": "instagram", "website_status": "website_status", "rating": "rating",
+    "reviews": "reviews", "address": "address", "city": "city", "region": "region", "postal_code": "postal_code",
+    "country": "country", "google_maps_url": "google_maps_url", "notes": "notes",
+}
+
+
+def publish_to_crm(leads: list[dict[str, Any]], url: str, key: str) -> tuple[bool, str]:
+    """
+    Put the leads straight into the Lead CRM through its API key, two hundred
+    at a time. The CRM skips any business already on the list (same name and
+    town), so re-running a scrape never doubles anyone up. Never raises.
+    """
+    rows = []
+    for lead in leads:
+        out: dict[str, Any] = {}
+        for col, field in CRM_FIELDS.items():
+            val = lead.get(col)
+            if val in (None, "") or field in out and out[field]:
+                continue
+            out[field] = str(val)
+        if out.get("business") or out.get("phone") or out.get("email"):
+            rows.append(out)
+    if not rows:
+        return (True, "nothing to send")
+    added = skipped = 0
+    for start in range(0, len(rows), 200):
+        payload = json.dumps({"op": "add_leads", "leads": rows[start:start + 200]}).encode("utf-8")
+        request = urllib.request.Request(
+            url.rstrip("/") + "/api/crm?track=local", data=payload, method="POST",
+            headers={"Content-Type": "application/json", "x-activity-secret": key},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=60) as resp:
+                body = resp.read(20_000).decode("utf-8", errors="ignore")
+        except HTTPError as exc:
+            detail = exc.read(2_000).decode("utf-8", errors="ignore")
+            if exc.code in (401, 403):
+                return (False, "the CRM refused the key (check CRM_KEY against Settings, Developer)")
+            return (False, f"the CRM returned HTTP {exc.code} {detail[:120]}")
+        except (URLError, socket.timeout, TimeoutError, OSError) as exc:
+            return (False, f"could not reach the CRM ({exc})")
+        try:
+            result = json.loads(body)
+        except ValueError:
+            return (False, "the CRM did not answer with data (is CRM_URL the CRM's address?)")
+        if not result.get("ok"):
+            return (False, str(result.get("error", "the CRM rejected the leads")))
+        added += int(result.get("added", 0) or 0)
+        skipped += int(result.get("skipped", 0) or 0)
+    return (True, f"added {added}, skipped {skipped} already on your list")
+
+
 def slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "leads"
 
@@ -1159,9 +1263,14 @@ def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser.add_argument("--json", action="store_true", help="Also print a JSON summary to stdout")
     parser.add_argument("--sheet-url", help="Google Apps Script web app URL to publish leads to (overrides SHEETS_WEBHOOK_URL)")
     parser.add_argument("--no-sheet", action="store_true", help="Do not publish to Google Sheets even if a URL is set")
+    parser.add_argument("--crm-url", help="Your Lead CRM's address, e.g. https://my-crm.vercel.app (overrides CRM_URL). Leads go straight into it.")
+    parser.add_argument("--crm-key", help="The CRM's API key, from Settings, Developer (overrides CRM_KEY)")
+    parser.add_argument("--no-crm", action="store_true", help="Do not publish to the CRM even if CRM_URL is set")
     parser.add_argument("--email", action="store_true", help="After scraping, email new leads (and send any due follow-ups) via Resend (needs RESEND_* in .env; see RESEND-SETUP.md)")
     parser.add_argument("--email-dry-run", action="store_true", help="Show which leads --email would contact, without sending")
     parser.add_argument("--email-limit", type=int, default=None, help="Override today's automatic warm-up cap (by default it ramps from 20 up to 100 a day as your domain ages)")
+    parser.add_argument("--per-day", type=int, default=25, help="How many of these leads become eligible to email each day (default 25). This is what stops a big scrape going out as one spike.")
+    parser.add_argument("--start", default="", help="First send date, YYYY-MM-DD (default today). Use this when you scrape again while a queue is still running, so the new leads start after the old ones finish.")
     return parser.parse_args(argv)
 
 
@@ -1272,6 +1381,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     # them sitting there: the first screen is the one people judge the list on.
     leads = sort_leads(leads)
 
+    # After sorting, so the hottest leads get the earliest send dates.
+    pacing = enrich_for_outreach(leads, args.per_day, args.start)
+    if pacing:
+        print(pacing)
+
     output_path = args.output or default_output_path(label, location)
     write_csv(leads, output_path)
 
@@ -1307,8 +1421,21 @@ def main(argv: Optional[list[str]] = None) -> int:
             else:
                 print(f"Could not publish to your Google Sheet: {detail}.", file=sys.stderr)
                 print("Your CSV is saved, so nothing is lost. Check SHEETS_WEBHOOK_URL in .env.", file=sys.stderr)
-    elif not sheet_url and not args.no_sheet:
-        print("Tip: connect a Google Sheet to auto-publish these. See google-sheet/SETUP.md.")
+    # Or straight into the Lead CRM, which needs no sheet at all.
+    crm_url = (args.crm_url or os.getenv("CRM_URL", "")).strip()
+    crm_key = (args.crm_key or os.getenv("CRM_KEY", "")).strip()
+    if crm_url and not args.no_crm:
+        if not crm_key:
+            print("CRM_URL is set but CRM_KEY is not: copy the key from the CRM's Settings, Developer.", file=sys.stderr)
+        else:
+            ok, detail = publish_to_crm(leads, crm_url, crm_key)
+            if ok:
+                print(f"Published to your CRM ({detail}).")
+            else:
+                print(f"Could not publish to your CRM: {detail}.", file=sys.stderr)
+                print("Your CSV is saved, so nothing is lost. Import it from the CRM's Settings, Data.", file=sys.stderr)
+    elif not sheet_url and not args.no_sheet and not crm_url:
+        print("Tip: set CRM_URL and CRM_KEY in .env and every scrape lands in your CRM by itself. Until then, import the CSV from the CRM's Settings, Data.")
 
     hot = sum(1 for l in leads if l["lead_heat"] == "HOT")
     warm = sum(1 for l in leads if l["lead_heat"] == "WARM")
