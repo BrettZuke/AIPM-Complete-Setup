@@ -41,7 +41,7 @@ function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
     if (!SHARED_TOKEN) return _json({ ok: false, error: NO_TOKEN });
-    if (String(body.token || '') !== SHARED_TOKEN) {
+    if (typeof body.token !== 'string' || body.token !== SHARED_TOKEN) {
       return _json({ ok: false, error: 'bad token' });
     }
     // The outreach autopilot posts status updates after it emails leads.
@@ -213,7 +213,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.stats || p.leads || p.crm || p.referrals || p.customers) {
     if (!SHARED_TOKEN) return _json({ ok: false, error: NO_TOKEN });
-    if (String(p.token || '') !== SHARED_TOKEN) {
+    if (typeof p.token !== 'string' || p.token !== SHARED_TOKEN) {
       return _json({ ok: false, error: 'bad token' });
     }
     if (p.referrals) return _json(sheetReferrals());
