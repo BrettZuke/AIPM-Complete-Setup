@@ -9,6 +9,8 @@ credentials.json
 token.json
 *.pem
 *.key
+.db-password.txt
+*password*.txt
 # build output
 .next/
 dist/
