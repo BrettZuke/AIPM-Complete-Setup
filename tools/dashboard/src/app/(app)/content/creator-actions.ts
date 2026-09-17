@@ -47,20 +47,32 @@ export async function addCreator(input: AddCreatorInput): Promise<CreatorResult>
 
   // Adding a handle already on the roster re-activates and re-roles it rather than erroring or
   // duplicating: "add this person" and "I want them back" are the same intent to the operator.
-  const { error } = await sbu.from("content_creators").upsert(
-    {
-      agency_id: agencyId,
-      handle,
-      name: nn(name) ?? handle,
-      instagram: nn(instagram) ?? handle,
-      youtube: yt ? normaliseHandle(yt) : null,
-      role,
-      status: "active",
-      note: nn(note),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "agency_id,handle" },
+  //
+  // The match is made here rather than with an upsert. The roster's unique key is
+  // (agency_id, lower(handle)), an expression index, and Postgres rejects an ON CONFLICT that names
+  // plain columns instead (42P10), which made this button fail on every click.
+  const { data: rows, error: readError } = await sbu
+    .from("content_creators")
+    .select("id,handle")
+    .eq("agency_id", agencyId);
+  if (readError) return { ok: false, error: readError.message };
+  const existing = ((rows ?? []) as { id: string; handle: string }[]).find(
+    (r) => (r.handle ?? "").trim().toLowerCase() === handle.trim().toLowerCase(),
   );
+  const row = {
+    agency_id: agencyId,
+    handle,
+    name: nn(name) ?? handle,
+    instagram: nn(instagram) ?? handle,
+    youtube: yt ? normaliseHandle(yt) : null,
+    role,
+    status: "active",
+    note: nn(note),
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = existing
+    ? await sbu.from("content_creators").update(row).eq("id", existing.id).eq("agency_id", agencyId)
+    : await sbu.from("content_creators").insert(row);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/content");
   return { ok: true };
